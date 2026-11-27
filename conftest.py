@@ -1,12 +1,12 @@
 import pytest
-import requests
-import uuid
 
-from urls import Urls
+from api import StellarBurgersApi
+from helpers import generate_random_string
+
 
 @pytest.fixture
 def new_user():
-    uid = uuid.uuid4().hex[:8]
+    uid = generate_random_string()
     return {
         "email": f"test_{uid}@yandex.ru",
         "password": "password123",
@@ -15,14 +15,25 @@ def new_user():
 
 @pytest.fixture
 def user_with_token(new_user):
-    resp = requests.post(Urls.REGISTER, json=new_user)
-    data = resp.json()
-    yield {**new_user, "token": data["accessToken"]}
-    requests.delete(Urls.USER, headers={"Authorization": data["accessToken"]})
+    response = StellarBurgersApi.register_user(new_user)
+    assert response.status_code == 200
 
+    data = response.json()
+    token = data["accessToken"]
+
+    yield {
+        **new_user, 
+        "token": token,
+        "registration_data": data,
+    }
+
+    StellarBurgersApi.delete_user(token)
 
 @pytest.fixture
 def ingredient_ids():
-    resp = requests.get(Urls.INGREDIENTS)
-    assert resp.status_code == 200
-    return [i["_id"] for i in resp.json()["data"]]
+    response = StellarBurgersApi.get_ingredients()
+    assert response.status_code == 200
+    return [
+        ingredient["_id"]
+        for ingredient in response.json()["data"]
+    ]

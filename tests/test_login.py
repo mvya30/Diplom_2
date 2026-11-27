@@ -1,7 +1,7 @@
 import allure
-import requests
+
 from data import DataForUser, Messages
-from urls import Urls
+from api import StellarBurgersApi
 
 @allure.feature("Логин пользователя")
 class TestLoginUser:
@@ -13,7 +13,7 @@ class TestLoginUser:
             "email": user_with_token["email"],
             "password": user_with_token["password"],
         }
-        response = requests.post(Urls.LOGIN, json=payload)
+        response = StellarBurgersApi.login_user(payload)
         assert response.status_code == 200
         assert response.json()["success"] is True
 
@@ -25,7 +25,7 @@ class TestLoginUser:
             "password": user_with_token["password"],
         }
 
-        response = requests.post(Urls.LOGIN, json=payload)
+        response = StellarBurgersApi.login_user(payload)
 
         assert response.status_code == 401
         assert response.json()["message"] == Messages.WRONG_CREDENTIALS
@@ -38,7 +38,7 @@ class TestLoginUser:
             "password": DataForUser.INVALID_LOGIN_DATA_2["password"],
         }
 
-        response = requests.post(Urls.LOGIN, json=payload)
+        response = StellarBurgersApi.login_user(payload)
 
         assert response.status_code == 401
         assert response.json()["message"] == Messages.WRONG_CREDENTIALS
@@ -51,7 +51,7 @@ class TestLoginUser:
             "password": DataForUser.INVALID_LOGIN_DATA_3["password"],
         }
 
-        response = requests.post(Urls.LOGIN, json=payload)
+        response = StellarBurgersApi.login_user(payload)
 
         assert response.status_code == 401
         assert response.json()["message"] == Messages.WRONG_CREDENTIALS
